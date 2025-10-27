@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.patches import Circle
 
 from config import Config
 
@@ -72,6 +73,41 @@ def plot_trained_date(rewards, success_rates, value_losses, sinr_losses):
     ax2.set_ylabel('SINR Loss')
     ax2.set_title('Training SINR Loss')
     ax2.grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
+
+def visualize_trajectory(gbs_positions, start_position, end_position, trajectory, is_success):
+    """绘制轨迹
+
+    Args:
+        gbs_positions: 基站位置
+        start_position: 起点
+        end_position: 终点
+        trajectory: 无人机轨迹
+        is_success: 是否到达终点
+    """
+    fig, ax = plt.subplots(figsize=(12, 10))
+    for i, gbs in enumerate(gbs_positions):
+        ax.plot(gbs[0], gbs[1], 'g^', markersize=15,
+                label='GBS' if i == 0 else '')
+        circle = Circle((gbs[0], gbs[1]), 200, fill=True, alpha=0.1, color='yellow')
+        ax.add_patch(circle)
+
+    # 绘制轨迹
+    ax.plot(trajectory[:, 0], trajectory[:, 1], 'b.-', linewidth=2,
+            markersize=3, label='Trajectory')
+    ax.plot(start_position[0], start_position[1], 'ro', markersize=15, label='Start')
+    ax.plot(end_position[0], end_position[1], 'r*', markersize=20, label='Goal')
+
+    ax.set_xlim(0, Config.AREA_SIZE)
+    ax.set_ylim(0, Config.AREA_SIZE)
+    ax.set_xlabel('X (m)', fontsize=12)
+    ax.set_ylabel('Y (m)', fontsize=12)
+    ax.set_title(f'UAV Trajectory (Success: {is_success})', fontsize=14)
+    ax.legend(fontsize=10)
+    ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
     plt.show()

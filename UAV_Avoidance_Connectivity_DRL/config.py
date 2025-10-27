@@ -50,7 +50,7 @@ class Config:
     EPSILON_DECAY = 0.995
     MEMORY_SIZE = 30000
     NUM_EPISODES = 100
-    NUM_CASES = 20
+    NUM_CASES = 30
 
     # 神经网络参数
     VALUE_NET_HIDDEN = [64, 32, 16]

@@ -2,7 +2,7 @@ from agent import ValueBasedAgent
 from config import Config
 from environment import GroundBaseStation, Environment
 import numpy as np
-from method import plot_trained_date
+from method import plot_trained_date, visualize_trajectory
 
 
 def train():
@@ -17,7 +17,7 @@ def train():
 
     # 初始化智能体
     print("初始化智能体...\n")
-    state_dim = 6 + (Config.UAV_N - 1) * 7 + Config.NEAR_GBS_N * 5
+    state_dim = 6 + Config.NEAR_GBS_N * 5
     sinr_state_dim = Config.NEAR_GBS_N * 3
     agent = ValueBasedAgent(state_dim, sinr_state_dim)
 
@@ -59,6 +59,9 @@ def train():
                 state = next_state
 
                 if done:
+                    if case!=0 and episode!=0 and case * episode % 500 == 0:
+                        visualize_trajectory(env.gbs_network.gbs_positions, env.pos_origin, env.pos_destination,
+                                             np.array(env.trajectory), info["success"])
                     if info["success"]:
                         success_count += 1
                     break
@@ -111,12 +114,30 @@ def train():
 
 
 def test():
-    pass
+    gbs_network = GroundBaseStation()
+    env = Environment(gbs_network)
+    state_dim = 6 + Config.NEAR_GBS_N * 5
+    sinr_state_dim = Config.NEAR_GBS_N * 3
+    agent = ValueBasedAgent(state_dim, sinr_state_dim)
+    agent.load_model("RLTCW-SP.pth")
 
-
-def main():
-    pass
+    end_info = None
+    env.reset()
+    max_steps = 500
+    for step in range(max_steps):
+        action = agent.select_action(env, use_epsilon=False)
+        state, reward, done, info = env.step(action)
+        if done:
+            end_info = info
+            break
+    trajectory = np.array(env.trajectory)
+    visualize_trajectory(env.gbs_network.gbs_positions, env.pos_origin, env.pos_destination, trajectory,
+                         end_info['success'])
+    print(f"\n测试结果:")
+    print(f"  成功: {end_info['is_success']}")
+    print(f"  到达距离: {end_info['dist_to_dest']:.2f}m")
+    print(f"  最终SINR: {10 * np.log10(end_info['sinr']):.2f} dB")
 
 
 if __name__ == '__main__':
-    main()
+    train()

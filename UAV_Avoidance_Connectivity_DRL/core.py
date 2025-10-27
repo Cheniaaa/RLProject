@@ -47,7 +47,7 @@ class ReplayBuffer:
 
     def sample(self, batch_size):
         """随机采样一批经验"""
-        return random.sample(self.buffer, batch_size)
+        return random.sample(self.buffer, min(len(self.buffer), batch_size))
 
     def __len__(self):
         return len(self.buffer)

@@ -5,6 +5,7 @@ from torch import optim
 from core import ValueNetwork, SINRNetwork, ReplayBuffer
 from environment import *
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class ValueBasedAgent:
@@ -13,10 +14,10 @@ class ValueBasedAgent:
         self.sinr_state_dim = sinr_state_dim
 
         # 价值网络
-        self.value_net = ValueNetwork(state_dim)
+        self.value_net = ValueNetwork(state_dim).to(device)
 
         # SINR预测网络
-        self.sinr_net = SINRNetwork(sinr_state_dim)
+        self.sinr_net = SINRNetwork(sinr_state_dim).to(device)
 
         # 优化器
         self.value_optimizer = optim.Adam(self.value_net.parameters(), lr=Config.LEARNING_RATE, weight_decay=0.0001)
@@ -90,14 +91,14 @@ class ValueBasedAgent:
 
     def predict_value(self, state):
         """预测状态价值"""
-        state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
+        state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(device)
         with torch.no_grad():
             value = self.value_net(state_tensor).item()
         return value
 
     def predict_sinr(self, sinr_state):
         """预测SINR"""
-        sinr_state_tensor = torch.tensor(sinr_state, dtype=torch.float32).unsqueeze(0)
+        sinr_state_tensor = torch.tensor(sinr_state, dtype=torch.float32).unsqueeze(0).to(device)
         with torch.no_grad():
             sinr_level = self.sinr_net(sinr_state_tensor).item()
         return sinr_level
@@ -116,15 +117,15 @@ class ValueBasedAgent:
 
     def train(self):
         """训练网络"""
-        if len(self.value_buffer) < Config.BATCH_SIZE:
+        if self.value_buffer.__len__() < Config.BATCH_SIZE:
             return None, None
 
         # 训练价值网络
         batch = self.value_buffer.sample(Config.BATCH_SIZE)
         states, values = zip(*batch)
 
-        states_tensor = torch.tensor(np.array(states), dtype=torch.float32)
-        values_tensor = torch.tensor(np.array(values), dtype=torch.float32).unsqueeze(1)
+        states_tensor = torch.tensor(np.array(states), dtype=torch.float32).to(device)
+        values_tensor = torch.tensor(np.array(values), dtype=torch.float32).unsqueeze(1).to(device)
         pred_value = self.value_net(states_tensor)
         value_loss = torch.nn.MSELoss()(pred_value, values_tensor)
         self.value_optimizer.zero_grad()
@@ -135,8 +136,8 @@ class ValueBasedAgent:
         sinr_batch = self.sinr_buffer.sample(Config.BATCH_SIZE)
         sinr_states, sinr_values = zip(*batch)
 
-        sinr_states_tensor = torch.tensor(np.array(sinr_states), dtype=torch.float32)
-        sinr_values_tensor = torch.tensor(np.array(sinr_values), dtype=torch.float32).unsqueeze(1)
+        sinr_states_tensor = torch.tensor(np.array(sinr_states), dtype=torch.float32).to(device)
+        sinr_values_tensor = torch.tensor(np.array(sinr_values), dtype=torch.float32).unsqueeze(1).to(device)
         pred_sinr = self.sinr_net(sinr_states_tensor)
         sinr_loss = torch.nn.MSELoss()(pred_sinr, sinr_values_tensor)
         self.sinr_optimizer.zero_grad()

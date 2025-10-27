@@ -15,22 +15,21 @@ class GroundBaseStation:
     def _generate_gbs_positions(self):
         """生成GBS位置"""
         positions = []
-        grid_size = int(np.sqrt(self.gbs_num))
-        x_step = self.area_size / (grid_size + 1)
-        y_step = self.area_size / (grid_size + 1)
+        # grid_size = int(np.sqrt(self.gbs_num)) + 1
+        # x_step = self.area_size / (grid_size + 1)
+        # y_step = self.area_size / (grid_size + 1)
+        #
+        # for i in range(grid_size):
+        #     for j in range(grid_size):
+        #         if len(positions) < self.gbs_num:
+        #             x = (i + 1) * x_step + np.random.uniform(-30, 30)
+        #             y = (j + 1) * y_step + np.random.uniform(-30, 30)
+        #             positions.append([x, y, self.gbs_height])
 
-        for i in range(grid_size):
-            for j in range(grid_size):
-                if len(positions) < self.gbs_num:
-                    x = (i + 1) * x_step + np.random.uniform(-30, 30)
-                    y = (j + 1) * y_step + np.random.uniform(-30, 30)
-                    positions.append([x, y, self.gbs_height])
-
-        # for _ in range(Config.GBS_N):
-        #     x = np.random.uniform(0, self.area_size)
-        #     y = np.random.uniform(0, self.area_size)
-        #     positions.append([x, y, self.gbs_height])
-
+        for _ in range(Config.GBS_N):
+            x = np.random.uniform(0, self.area_size)
+            y = np.random.uniform(0, self.area_size)
+            positions.append([x, y, self.gbs_height])
         return np.array(positions)
 
     def compute_sinr(self, uav_pos):
@@ -131,7 +130,7 @@ class Environment:
         self.uav_velocity = action[:2]
         self.uav_speed = action[2]
         self.uav_orientation = action[3]
-        self.uav_position += self.uav_velocity * Config.DT  # 更新位置
+        self.uav_position[:2] = self.uav_position[:2] + self.uav_velocity * Config.DT  # 更新位置
 
         # 边界约束
         self.uav_position[0] = np.clip(self.uav_position[0], 0, Config.AREA_SIZE)
@@ -176,7 +175,7 @@ class Environment:
             info['out_of_time'] = True
 
         self.time_step += 1
-        next_state = self.get_state()
+        next_state, _ = self.get_state()
         return next_state, reward, done, info
 
     def get_reward(self, dist_to_dest, sinr):
@@ -233,7 +232,7 @@ class Environment:
 
         # GBS信息（P_Bk=[˜px_Bk, ˜py_Bk, d_Bk, φ_Bk, θ_Bk]）
         gbs_positions = self.gbs_network.gbs_positions
-        uav_gbs_dists = [np.linalg.norm(self.uav_position[:2], gbs[:2]) for gbs in gbs_positions]
+        uav_gbs_dists = [np.linalg.norm(self.uav_position[:2] - gbs[:2]) for gbs in gbs_positions]
         nearest_indices = np.argsort(uav_gbs_dists)[:Config.NEAR_GBS_N]  # np.argsort返回排序后的下标
 
         for idx in nearest_indices:
