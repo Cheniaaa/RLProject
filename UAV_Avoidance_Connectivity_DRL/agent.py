@@ -134,7 +134,7 @@ class ValueBasedAgent:
 
         # 训练SINR预测网络
         sinr_batch = self.sinr_buffer.sample(Config.BATCH_SIZE)
-        sinr_states, sinr_values = zip(*batch)
+        sinr_states, sinr_values = zip(*sinr_batch)
 
         sinr_states_tensor = torch.tensor(np.array(sinr_states), dtype=torch.float32).to(device)
         sinr_values_tensor = torch.tensor(np.array(sinr_values), dtype=torch.float32).unsqueeze(1).to(device)
