@@ -23,10 +23,10 @@ arr = [1, 2, 3, 4]
 # arr.extend([8, 9, 0])
 # brr = arr
 # brr.extend([5, 6, 7])
-print(np.array(arr))
-
-print(torch.tensor(np.array(arr)).unsqueeze(1))
-print(np.array(arr).reshape(-1, 1))
+# print(np.array(arr))
+#
+# print(torch.tensor(np.array(arr)).unsqueeze(1))
+# print(np.array(arr).reshape(-1, 1))
 # print(brr)
 
 # buffer = deque(maxlen=10)
@@ -42,3 +42,5 @@ print(np.array(arr).reshape(-1, 1))
 # brr = np.array([4, 5, 6, 7])
 # brr[:3] = brr[:3] + arr
 # print(brr)
+
+print(10**(-3/10))

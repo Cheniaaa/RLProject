@@ -9,7 +9,7 @@ def compute_gbs_antenna_gain(distance, gbs_h, uav_h, theta_tilt, theta_3db, gain
     """计算GBS天线增益"""
     if distance == 0:
         distance = 1e-6
-    angle = np.arctan((gbs_h - uav_h) / distance)
+    angle = np.arctan2((gbs_h - uav_h), distance)
     gain_v = -min(12 * ((angle - theta_tilt) / theta_3db) ** 2, gain_m)
     gain_h = 0
     return gain_v + gain_h  # dB

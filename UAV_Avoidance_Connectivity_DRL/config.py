@@ -5,7 +5,7 @@ import numpy as np
 
 class Config:
     # 环境参数
-    AREA_SIZE = 1000  # 区域大小 (m)
+    AREA_SIZE = 100  # 区域大小 (m)
 
     # GBS参数
     GBS_N = 12  # 基站数量
@@ -49,7 +49,7 @@ class Config:
     EPSILON_END = 0.1
     EPSILON_DECAY = 0.995
     MEMORY_SIZE = 30000
-    NUM_EPISODES = 100
+    NUM_EPISODES = 300
     NUM_CASES = 30
 
     # 神经网络参数
@@ -58,6 +58,6 @@ class Config:
 
     # 仿真参数
     DT = 0.5  # 每个时间步长对应的时间
-    DEST_THRESHOLD = 10  # 到达目标的距离阈值
+    DEST_THRESHOLD = 1  # 到达目标的距离阈值
 
     MODEL_PATH = './model/'

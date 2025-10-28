@@ -15,21 +15,21 @@ class GroundBaseStation:
     def _generate_gbs_positions(self):
         """生成GBS位置"""
         positions = []
-        # grid_size = int(np.sqrt(self.gbs_num)) + 1
-        # x_step = self.area_size / (grid_size + 1)
-        # y_step = self.area_size / (grid_size + 1)
-        #
-        # for i in range(grid_size):
-        #     for j in range(grid_size):
-        #         if len(positions) < self.gbs_num:
-        #             x = (i + 1) * x_step + np.random.uniform(-30, 30)
-        #             y = (j + 1) * y_step + np.random.uniform(-30, 30)
-        #             positions.append([x, y, self.gbs_height])
+        grid_size = int(np.sqrt(self.gbs_num)) + 1
+        x_step = self.area_size / (grid_size + 1)
+        y_step = self.area_size / (grid_size + 1)
 
-        for _ in range(Config.GBS_N):
-            x = np.random.uniform(0, self.area_size)
-            y = np.random.uniform(0, self.area_size)
-            positions.append([x, y, self.gbs_height])
+        for i in range(grid_size):
+            for j in range(grid_size):
+                if len(positions) < self.gbs_num:
+                    x = (i + 1) * x_step + np.random.uniform(-20, 20)
+                    y = (j + 1) * y_step + np.random.uniform(-20, 20)
+                    positions.append([x, y, self.gbs_height])
+
+        # for _ in range(Config.GBS_N):
+        #     x = np.random.uniform(0, self.area_size)
+        #     y = np.random.uniform(0, self.area_size)
+        #     positions.append([x, y, self.gbs_height])
         return np.array(positions)
 
     def compute_sinr(self, uav_pos):

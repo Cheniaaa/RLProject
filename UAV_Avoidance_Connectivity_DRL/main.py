@@ -59,11 +59,14 @@ def train():
                 state = next_state
 
                 if done:
-                    if case!=0 and episode!=0 and case * episode % 500 == 0:
+                    # if case != 0 and episode != 0 and case * episode % 500 == 0:
+                    #     visualize_trajectory(env.gbs_network.gbs_positions, env.pos_origin, env.pos_destination,
+                    #                          np.array(env.trajectory), info["success"])
+                    if info["success"]:
                         visualize_trajectory(env.gbs_network.gbs_positions, env.pos_origin, env.pos_destination,
                                              np.array(env.trajectory), info["success"])
-                    if info["success"]:
                         success_count += 1
+                    # print(np.array(env.trajectory))
                     break
             episode_reward_list.append(total_reward)
 
@@ -123,21 +126,22 @@ def test():
 
     end_info = None
     env.reset()
-    max_steps = 500
+    max_steps = 3000
     for step in range(max_steps):
         action = agent.select_action(env, use_epsilon=False)
         state, reward, done, info = env.step(action)
         if done:
-            end_info = info
+            end_info = info.copy()
             break
     trajectory = np.array(env.trajectory)
     visualize_trajectory(env.gbs_network.gbs_positions, env.pos_origin, env.pos_destination, trajectory,
                          end_info['success'])
     print(f"\n测试结果:")
-    print(f"  成功: {end_info['is_success']}")
+    print(f"  成功: {end_info['success']}")
     print(f"  到达距离: {end_info['dist_to_dest']:.2f}m")
     print(f"  最终SINR: {10 * np.log10(end_info['sinr']):.2f} dB")
 
 
 if __name__ == '__main__':
-    train()
+    # train()
+    test()
