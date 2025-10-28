@@ -256,7 +256,7 @@ class Environment:
                 phi = self.uav_orientation + norm_angle * Config.MAX_T_R * Config.DT
                 phi = (phi + math.pi) % (2 * math.pi) - math.pi  # 归一化到[-π, π]
 
-                speed = Config.MAX_V * norm_speed
+                speed = norm_speed * Config.MAX_V
                 velocity_x = speed * np.cos(phi)
                 velocity_y = speed * np.sin(phi)
                 actions.append([velocity_x, velocity_y, speed, phi])
