@@ -63,25 +63,25 @@ def compute_signal(distance):
 
 def plot_trained_date(rewards, value_losses, sinr_losses):
     """绘制训练曲线"""
-    fig, (ax1, ax2, ax3) = plt.subplots(2, 2, figsize=(15, 5))
+    fig, ax = plt.subplots(2, 2, figsize=(15, 15))
 
-    ax1.plot(rewards)
-    ax1.set_xlabel('Episode')
-    ax1.set_ylabel('Average Reward')
-    ax1.set_title('Training Rewards')
-    ax1.grid(True)
+    ax[0, 0].plot(rewards, color='red')
+    ax[0, 0].set_xlabel('Episode')
+    ax[0, 0].set_ylabel('Average Reward')
+    ax[0, 0].set_title('Training Rewards')
+    ax[0, 0].grid(True)
 
-    ax2.plot(value_losses)
-    ax2.set_xlabel('Episode')
-    ax2.set_ylabel('Value Loss')
-    ax2.set_title('Training Value Loss')
-    ax2.grid(True)
+    ax[0, 1].plot(value_losses, color='orange')
+    ax[0, 1].set_xlabel('Episode')
+    ax[0, 1].set_ylabel('Value Loss')
+    ax[0, 1].set_title('Training Value Loss')
+    ax[0, 1].grid(True)
 
-    ax3.plot(sinr_losses)
-    ax3.set_xlabel('Episode')
-    ax3.set_ylabel('SINR Loss')
-    ax3.set_title('Training SINR Loss')
-    ax3.grid(True)
+    ax[1, 0].plot(sinr_losses, color='green')
+    ax[1, 0].set_xlabel('Episode')
+    ax[1, 0].set_ylabel('SINR Loss')
+    ax[1, 0].set_title('Training SINR Loss')
+    ax[1, 0].grid(True)
 
     plt.tight_layout()
     plt.show()

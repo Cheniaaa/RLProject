@@ -1,7 +1,7 @@
 from collections import deque
 
 from environment import Environment, GroundBaseStation
-from method import generate_positions, start_trajectory
+from method import generate_positions, start_trajectory, plot_trained_date
 from config import Config
 import numpy as np
 import torch
@@ -49,16 +49,21 @@ arr = [1, 2, 3, 4]
 # brr[:3] = brr[:3] + arr
 # print(brr)
 
-print(10 ** (-3 / 10))
-
-speed = np.array([1.0, 0])
-position=np.array([0.0, 1.0])
-theta = np.pi / 4
-cos_theta = np.cos(theta)
-sin_theta = np.sin(theta)
-rot_matrix = np.array([[cos_theta, -sin_theta],
-                       [sin_theta, cos_theta]])
-print(np.dot(rot_matrix, speed))
+# print(10 ** (-3 / 10))
+#
+# speed = np.array([1.0, 0])
+# position = np.array([0.0, 1.0])
+# theta = np.pi / 4
+# cos_theta = np.cos(theta)
+# sin_theta = np.sin(theta)
+# rot_matrix = np.array([[cos_theta, -sin_theta],
+#                        [sin_theta, cos_theta]])
+# print(np.dot(rot_matrix, speed))
 # print(np.dot(speed, rot_matrix))
 # print(np.dot(position, rot_matrix))
-print(np.dot(rot_matrix, position))
+# print(np.dot(rot_matrix, position))
+
+rewards = [1, 3, 5, 7, 2, 3, 5, 6, 1, 2, 1, 4, 5]
+value_losses = [1, 2, 3, 4]
+sinr_losses = [1, 2, 3, 4]
+plot_trained_date(rewards, value_losses, sinr_losses)
