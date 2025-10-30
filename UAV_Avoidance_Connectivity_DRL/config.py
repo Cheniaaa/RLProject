@@ -16,9 +16,9 @@ class Config:
     THETA_3DB = np.deg2rad(15)
 
     # 通信参数
-    ALPHA = 2.5
+    ALPHA = 2.0
     NOISE_P = 1e-6  # 噪声功率
-    SINR_T_DB = -3  # SINR阈值 (dB)
+    SINR_T_DB = -4  # SINR阈值 (dB)
     SINR_T = 10 ** (SINR_T_DB / 10)
     SINR_B = 0.1  # sinr缓冲
     T_T = 5  # 最大允许断开时间 (s)
@@ -48,9 +48,9 @@ class Config:
     EPSILON_START = 0.5
     EPSILON_END = 0.1
     EPSILON_DECAY = 0.995
-    MEMORY_SIZE = 30000
+    MEMORY_SIZE = 20000
     NUM_EPISODES = 300
-    NUM_CASES = 30
+    NUM_CASES = 10
 
     # 神经网络参数
     VALUE_NET_HIDDEN = [64, 32, 16]
@@ -58,6 +58,6 @@ class Config:
 
     # 仿真参数
     DT = 0.5  # 每个时间步长对应的时间
-    DEST_THRESHOLD = 1  # 到达目标的距离阈值
+    DEST_THRESHOLD = 2  # 到达目标的距离阈值
 
     MODEL_PATH = './model/'

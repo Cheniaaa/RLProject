@@ -15,17 +15,20 @@ class GroundBaseStation:
     def _generate_gbs_positions(self):
         """生成GBS位置"""
         positions = []
-        grid_size = int(np.sqrt(self.gbs_num)) + 1
+        grid_size = int(np.sqrt(self.gbs_num))
         x_step = self.area_size / (grid_size + 1)
         y_step = self.area_size / (grid_size + 1)
 
         for i in range(grid_size):
             for j in range(grid_size):
                 if len(positions) < self.gbs_num:
-                    x = (i + 1) * x_step + np.random.uniform(-20, 20)
-                    y = (j + 1) * y_step + np.random.uniform(-20, 20)
+                    x = (i + 1) * x_step + np.random.uniform(-10, 10)
+                    y = (j + 1) * y_step + np.random.uniform(-10, 10)
                     positions.append([x, y, self.gbs_height])
-
+        while len(positions) < self.gbs_num:
+            x = np.random.uniform(0, self.area_size)
+            y = np.random.uniform(0, self.area_size)
+            positions.append([x, y, self.gbs_height])
         # for _ in range(Config.GBS_N):
         #     x = np.random.uniform(0, self.area_size)
         #     y = np.random.uniform(0, self.area_size)
@@ -78,40 +81,39 @@ class Environment:
         self.pos_origin = None
         self.pos_destination = None
         # 其他信息
-        self.disconnect_time = 0
         self.last_connection_time = 0  # TL(t)是无人机在时间t之前与蜂窝网络最后一次连接的时间
         self.time_step = 0
         self.trajectory = []
 
         self.max_steps = 1000
 
-    def reset(self):
+    def reset(self, start_position, end_position):
         """重置环境
 
         Returns:
             state: 环境观测状态
             sinr_state: SINR相关状态
         """
-
-        # 随机起始位置和终点
         self.pos_origin = np.array([
-            np.random.uniform(0, Config.AREA_SIZE),
-            np.random.uniform(0, Config.AREA_SIZE),
+            start_position[0],
+            start_position[1],
             Config.UAV_H
         ])
         self.pos_destination = np.array([
-            np.random.uniform(0, Config.AREA_SIZE),
-            np.random.uniform(0, Config.AREA_SIZE),
+            end_position[0],
+            end_position[1],
             Config.UAV_H
         ])
         self.uav_position = self.pos_origin.copy()  # copy()使用浅拷贝，新数组改变不会修改原数组
         self.uav_velocity = np.array([0.0, 0.0])
-        self.uav_orientation = 0.0
+        # self.uav_orientation = 0.0
+        to_goal_x_y = self.pos_destination[:2] - self.uav_position[:2]
+        to_goal_angle = np.arctan2(to_goal_x_y[1], to_goal_x_y[0])
+        self.uav_orientation = to_goal_angle
         self.uav_speed = 0.0
 
-        self.disconnect_time = 0
         self.trajectory = [self.uav_position[:2].copy()]
-
+        self.time_step = 0
         return self.get_state()
 
     def step(self, action):
@@ -158,20 +160,20 @@ class Environment:
             'out_of_time': False
         }
 
-        # 判断是否断联时间过长
-        self.disconnect_time = (self.time_step - self.last_connection_time) * Config.DT
-        if self.disconnect_time > Config.T_T:
-            done = True
-            info['disconnected'] = True
-            reward -= 10  # 额外惩罚
-
         if dist_to_dest < Config.DEST_THRESHOLD:
             done = True
             info['success'] = True
 
+        # 判断是否断联时间过长
+        disconnected_time = (self.time_step - self.last_connection_time) * Config.DT
+        if disconnected_time > Config.T_T:
+            # done = True
+            info['disconnected'] = True
+            # reward -= 20  # 额外惩罚
+
         # 超时
         if self.time_step > self.max_steps:
-            done = True
+            # done = True
             info['out_of_time'] = True
 
         self.time_step += 1
@@ -181,9 +183,6 @@ class Environment:
     def get_reward(self, dist_to_dest, sinr):
         """计算奖励"""
         reward = 0
-
-        # 时间惩罚 (R_t)
-        reward -= Config.ALPHA_4
 
         # 连接性奖励 (R_s)
         if self.time_step % Config.N_T == 0:
@@ -196,6 +195,9 @@ class Environment:
         if dist_to_dest < Config.DEST_THRESHOLD:
             reward += Config.ALPHA_3
 
+        # 时间惩罚 (R_t)
+        reward -= Config.ALPHA_4
+
         return reward
 
     def get_state(self):
@@ -203,8 +205,7 @@ class Environment:
 
         Returns:
             state: 环境观测状态
-            sinr_state: SINR相关状态
-
+            sinr_state: SINR网络输入状态
         Notes:
             原文：由于最优策略应对任何坐标平面保持不变，我们遵循如[6]、[42]和[9]中所述的以智能体为中心的参数化方法，其中智能体位于原点，x 轴指向智能体的目标位置。
         """
@@ -221,7 +222,8 @@ class Environment:
         rot_matrix = np.array([[cos_theta, -sin_theta],
                                [sin_theta, cos_theta]])
         v_local = np.dot(rot_matrix, self.uav_velocity)  # dot()用于矩阵乘积
-        phi_local = self.uav_orientation - to_goal_angle
+
+        phi_local = (self.uav_orientation - to_goal_angle - math.pi) % (2 * math.pi) + math.pi
 
         # SINR网络输入状态，式(31): Sjn_Bi=[[d_Bk, φ_Bk, θ_Bk]:k∈{1,...,Kn}]
         sinr_state = []
@@ -241,12 +243,12 @@ class Environment:
             relative_gbs_local = np.dot(rot_matrix, relative_gbs_pos)  # 变换到新坐标
 
             d_b = uav_gbs_dists[idx]
-            phi_b = np.arctan2(relative_gbs_local[1], relative_gbs_local[0])  # 水平角
+            phi_b = np.arctan2(relative_gbs_pos[1], relative_gbs_pos[0])  # 水平角
             theta_b = np.arctan2(gbs_pos[2] - self.uav_position[2], d_b)  # 垂直角
 
             state.extend([relative_gbs_local[0], relative_gbs_local[1], d_b, phi_b, theta_b])
             sinr_state.extend([d_b, phi_b, theta_b])
-        return np.array(state, dtype=np.float32), np.array(sinr_state, dtype=np.float32)
+        return np.array(state), np.array(sinr_state)
 
     def sample_action_space(self):
         """运动学约束采样"""

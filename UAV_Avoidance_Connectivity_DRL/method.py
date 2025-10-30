@@ -5,6 +5,21 @@ from matplotlib.patches import Circle
 from config import Config
 
 
+def generate_positions():
+    while True:
+        pos_origin = np.array([
+            np.random.uniform(10, Config.AREA_SIZE - 10),
+            np.random.uniform(10, Config.AREA_SIZE - 10),
+        ])
+        pos_destination = np.array([
+            np.random.uniform(10, Config.AREA_SIZE - 10),
+            np.random.uniform(10, Config.AREA_SIZE - 10),
+        ])
+        if np.linalg.norm(pos_destination[:2] - pos_origin[:2]) >= 50:
+            break
+    return pos_origin, pos_destination
+
+
 def compute_gbs_antenna_gain(distance, gbs_h, uav_h, theta_tilt, theta_3db, gain_m):
     """计算GBS天线增益"""
     if distance == 0:
@@ -46,9 +61,9 @@ def compute_signal(distance):
     return gbs_p_linear * gain_gbs_linear * gain_uav / pass_loss
 
 
-def plot_trained_date(rewards, success_rates, value_losses, sinr_losses):
+def plot_trained_date(rewards, value_losses, sinr_losses):
     """绘制训练曲线"""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+    fig, (ax1, ax2, ax3) = plt.subplots(2, 2, figsize=(15, 5))
 
     ax1.plot(rewards)
     ax1.set_xlabel('Episode')
@@ -56,29 +71,23 @@ def plot_trained_date(rewards, success_rates, value_losses, sinr_losses):
     ax1.set_title('Training Rewards')
     ax1.grid(True)
 
-    ax2.plot(success_rates)
-    ax2.set_xlabel('Episode')
-    ax2.set_ylabel('Success Rate')
-    ax2.set_title('Training Success Rate')
-    ax2.grid(True)
-
     ax2.plot(value_losses)
     ax2.set_xlabel('Episode')
     ax2.set_ylabel('Value Loss')
     ax2.set_title('Training Value Loss')
     ax2.grid(True)
 
-    ax2.plot(sinr_losses)
-    ax2.set_xlabel('Episode')
-    ax2.set_ylabel('SINR Loss')
-    ax2.set_title('Training SINR Loss')
-    ax2.grid(True)
+    ax3.plot(sinr_losses)
+    ax3.set_xlabel('Episode')
+    ax3.set_ylabel('SINR Loss')
+    ax3.set_title('Training SINR Loss')
+    ax3.grid(True)
 
     plt.tight_layout()
     plt.show()
 
 
-def visualize_trajectory(gbs_positions, start_position, end_position, trajectory, is_success):
+def visualize_trajectory(gbs_positions, start_position, end_position, trajectory, is_success, episode):
     """绘制轨迹
 
     Args:
@@ -87,12 +96,13 @@ def visualize_trajectory(gbs_positions, start_position, end_position, trajectory
         end_position: 终点
         trajectory: 无人机轨迹
         is_success: 是否到达终点
+        episode: 训练轮数
     """
     fig, ax = plt.subplots(figsize=(12, 10))
     for i, gbs in enumerate(gbs_positions):
         ax.plot(gbs[0], gbs[1], 'g^', markersize=15,
                 label='GBS' if i == 0 else '')
-        circle = Circle((gbs[0], gbs[1]), 200, fill=True, alpha=0.1, color='yellow')
+        circle = Circle((gbs[0], gbs[1]), 20, fill=True, alpha=0.1, color='yellow')
         ax.add_patch(circle)
 
     # 绘制轨迹
@@ -105,7 +115,34 @@ def visualize_trajectory(gbs_positions, start_position, end_position, trajectory
     ax.set_ylim(0, Config.AREA_SIZE)
     ax.set_xlabel('X (m)', fontsize=12)
     ax.set_ylabel('Y (m)', fontsize=12)
-    ax.set_title(f'UAV Trajectory (Success: {is_success})', fontsize=14)
+    ax.set_title(f'UAV Trajectory (Episode:{episode}  Success: {is_success})', fontsize=14)
+    ax.legend(fontsize=10)
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+
+def start_trajectory(gbs_positions, start_position, end_position):
+    """绘制轨迹
+
+    Args:
+        gbs_positions: 基站位置
+        start_position: 起点
+        end_position: 终点
+    """
+    fig, ax = plt.subplots(figsize=(12, 10))
+    for i, gbs in enumerate(gbs_positions):
+        ax.plot(gbs[0], gbs[1], 'g^', markersize=15,
+                label='GBS' if i == 0 else '')
+        circle = Circle((gbs[0], gbs[1]), 20, fill=True, alpha=0.1, color='yellow')
+        ax.add_patch(circle)
+    ax.plot(start_position[0], start_position[1], 'ro', markersize=15, label='Start')
+    ax.plot(end_position[0], end_position[1], 'r*', markersize=20, label='Goal')
+    ax.set_xlim(0, Config.AREA_SIZE)
+    ax.set_ylim(0, Config.AREA_SIZE)
+    ax.set_xlabel('X (m)', fontsize=12)
+    ax.set_ylabel('Y (m)', fontsize=12)
     ax.legend(fontsize=10)
     ax.grid(True, alpha=0.3)
 

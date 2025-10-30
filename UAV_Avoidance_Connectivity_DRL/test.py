@@ -1,6 +1,7 @@
 from collections import deque
 
 from environment import Environment, GroundBaseStation
+from method import generate_positions, start_trajectory
 from config import Config
 import numpy as np
 import torch
@@ -10,6 +11,11 @@ import torch
 # print(env.sample_action_space())
 
 # gbs = GroundBaseStation()
+# env = Environment(gbs)
+# start, end = generate_positions()
+# env.reset(start, end)
+# start_trajectory(env.gbs_network.gbs_positions, start, end)
+
 # print(gbs.gbs_positions)
 
 # pre_position = np.array([10, 20, 30], dtype=float)
@@ -43,4 +49,16 @@ arr = [1, 2, 3, 4]
 # brr[:3] = brr[:3] + arr
 # print(brr)
 
-print(10**(-3/10))
+print(10 ** (-3 / 10))
+
+speed = np.array([1.0, 0])
+position=np.array([0.0, 1.0])
+theta = np.pi / 4
+cos_theta = np.cos(theta)
+sin_theta = np.sin(theta)
+rot_matrix = np.array([[cos_theta, -sin_theta],
+                       [sin_theta, cos_theta]])
+print(np.dot(rot_matrix, speed))
+# print(np.dot(speed, rot_matrix))
+# print(np.dot(position, rot_matrix))
+print(np.dot(rot_matrix, position))
