@@ -2,7 +2,7 @@ from agent import ValueBasedAgent
 from config import Config
 from environment import GroundBaseStation, Environment
 import numpy as np
-from method import plot_trained_date, visualize_trajectory, generate_positions, start_trajectory
+from method import *
 
 
 def train():
@@ -150,6 +150,14 @@ def train_fixed():
     sinr_losses = []
     start_pos, end_pos = generate_positions()
     start_trajectory(env.gbs_network.gbs_positions, start_pos, end_pos)
+
+    position_json = {
+        "GBS_POSITION": env.gbs_network.gbs_positions.tolist(),
+        "START_POSITION": start_pos.tolist(),
+        "END_POSITION": end_pos.tolist()
+    }
+    write_pos_json(Config.POS_FILE_PATH, position_json)
+
     for episode in range(Config.NUM_EPISODES):
         # success_count = 0
         state, _ = env.reset(start_pos, end_pos)
@@ -205,12 +213,15 @@ def train_fixed():
             sinr_losses.append(sinr_loss)
         agent.update_epsilon()
 
+        if episode % 20 == 0:
+            visualize_trajectory(env.gbs_network.gbs_positions, env.pos_origin, env.pos_destination,
+                                 np.array(env.trajectory), info["success"], episode)
+
         if episode % 10 == 0:
             avg_reward = np.mean(episode_reward_list)
             episode_reward_list = []
             episode_rewards.append(avg_reward)
-            visualize_trajectory(env.gbs_network.gbs_positions, env.pos_origin, env.pos_destination,
-                                 np.array(env.trajectory), info["success"], episode)
+
             print(f"Episode {episode}/{Config.NUM_EPISODES}, "
                   f"Avg Reward: {avg_reward:.2f}, "
                   f"Epsilon: {agent.epsilon:.3f}")
@@ -225,11 +236,10 @@ def train_fixed():
 
     print("训练完成！\n")
     print("=" * 60)
-    return gbs_network
 
 
-def test(gbs_network):
-    # gbs_network = GroundBaseStation()
+def test():
+    gbs_network = GroundBaseStation()
     env = Environment(gbs_network)
     state_dim = 6 + Config.NEAR_GBS_N * 5
     sinr_state_dim = Config.NEAR_GBS_N * 3
@@ -261,5 +271,5 @@ def test(gbs_network):
 
 if __name__ == '__main__':
     # train()
-    gbs = train_fixed()
-    test(gbs)
+    train_fixed()
+    # test()

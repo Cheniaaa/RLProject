@@ -49,7 +49,7 @@ class Config:
     EPSILON_END = 0.1
     EPSILON_DECAY = 0.995
     MEMORY_SIZE = 20000
-    NUM_EPISODES = 300
+    NUM_EPISODES = 400
     NUM_CASES = 10
 
     # 神经网络参数
@@ -61,3 +61,4 @@ class Config:
     DEST_THRESHOLD = 2  # 到达目标的距离阈值
 
     MODEL_PATH = './model/'
+    POS_FILE_PATH = './data/position.json'

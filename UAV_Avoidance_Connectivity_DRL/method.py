@@ -1,21 +1,21 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.patches import Circle
-
+import json
 from config import Config
 
 
 def generate_positions():
     while True:
         pos_origin = np.array([
-            np.random.uniform(10, Config.AREA_SIZE - 10),
-            np.random.uniform(10, Config.AREA_SIZE - 10),
+            np.random.uniform(15, Config.AREA_SIZE - 15),
+            np.random.uniform(15, Config.AREA_SIZE - 15),
         ])
         pos_destination = np.array([
-            np.random.uniform(10, Config.AREA_SIZE - 10),
-            np.random.uniform(10, Config.AREA_SIZE - 10),
+            np.random.uniform(15, Config.AREA_SIZE - 15),
+            np.random.uniform(15, Config.AREA_SIZE - 15),
         ])
-        if np.linalg.norm(pos_destination[:2] - pos_origin[:2]) >= 50:
+        if np.linalg.norm(pos_destination[:2] - pos_origin[:2]) >= 45:
             break
     return pos_origin, pos_destination
 
@@ -148,3 +148,24 @@ def start_trajectory(gbs_positions, start_position, end_position):
 
     plt.tight_layout()
     plt.show()
+
+
+def write_pos_json(file_path: str, data):
+    data = {
+        "GBS_POSITION": data["GBS_POSITION"],
+        "START_POSITION": data["START_POSITION"],
+        "END_POSITION": data["END_POSITION"]
+    }
+
+    # 写入JSON文件
+    with open(file_path, 'w') as file:
+        json.dump(data, file)
+
+    print("位置信息已写入JSON文件")
+
+
+def read_pos_json(file_path: str):
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+    return data

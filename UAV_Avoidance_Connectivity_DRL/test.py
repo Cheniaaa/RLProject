@@ -1,7 +1,7 @@
 from collections import deque
 
 from environment import Environment, GroundBaseStation
-from method import generate_positions, start_trajectory, plot_trained_date
+from method import generate_positions, start_trajectory, plot_trained_date, write_pos_json, read_pos_json
 from config import Config
 import numpy as np
 import torch
@@ -63,7 +63,33 @@ arr = [1, 2, 3, 4]
 # print(np.dot(position, rot_matrix))
 # print(np.dot(rot_matrix, position))
 
-rewards = [1, 3, 5, 7, 2, 3, 5, 6, 1, 2, 1, 4, 5]
-value_losses = [1, 2, 3, 4]
-sinr_losses = [1, 2, 3, 4]
-plot_trained_date(rewards, value_losses, sinr_losses)
+# rewards = [1, 3, 5, 7, 2, 3, 5, 6, 1, 2, 1, 4, 5]
+# value_losses = [1, 2, 3, 4]
+# sinr_losses = [1, 2, 3, 4]
+# plot_trained_date(rewards, value_losses, sinr_losses)
+
+
+# 你的数据
+# GBS_POSITION = np.array([[1, 2], [2, 4], [3, 5], [4, 6]]).tolist()
+# START_POSITION = [1, 2, 3]
+# END_POSITION = [2, 3, 4]
+#
+# # 将数据组织成字典
+# data = {
+#     "GBS_POSITION": GBS_POSITION,
+#     "START_POSITION": START_POSITION,
+#     "END_POSITION": END_POSITION
+# }
+
+file_path = './data/position.json'
+
+# write_pos_json(file_path, data)
+data = read_pos_json(file_path)
+
+GBS_POSITION = data['GBS_POSITION']
+START_POSITION = data['START_POSITION']
+END_POSITION = data['END_POSITION']
+
+print("GBS_POSITION:", GBS_POSITION)
+print("START_POSITION:", START_POSITION)
+print("END_POSITION:", END_POSITION)
